@@ -1,6 +1,9 @@
 package com.example.streamapiandoptional;
 
 import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 public class Main {
     public static void main(String[] args) {
@@ -15,15 +18,37 @@ public class Main {
 
         System.out.println(integerList);
 
-        main.findMinMax(integerList);
-        main.findEvenNumbersInList(integerList); // 2 Задание
+        main.findMinMax1(integerList.stream(), Comparator.naturalOrder(), (x, y) -> System.out.println("Максимальное число - " + x + "\nМинимальное число - " + y));
 
+        //  main.findMinMax(integerList);
+        main.findEvenNumbersInList(integerList); // 2 Задание
     }
 
     private void findMinMax(List<Integer> integerList) {
         Optional<Integer> max = integerList.stream().max(Comparator.naturalOrder());
         Optional<Integer> min = integerList.stream().min(Comparator.naturalOrder());
         System.out.println("Максимальное число - " + max + "\nМинимальное число - " + min);
+    }
+
+    private <T> void findMinMax1(Stream<? extends T> stream,
+                                 Comparator<? super T> order,
+                                 BiConsumer<? super T, ? super T> minMaxConsumer) {
+
+        List<? extends T> collect = stream.toList();
+        Supplier<Stream<? extends T>> streamSupplier = collect::stream;
+
+        if (streamSupplier.get().findAny().isEmpty()) {
+            minMaxConsumer.accept(null, null);
+            return;
+        }
+
+        Optional<? extends T> max = streamSupplier.get().max(order);
+        Optional<? extends T> min = streamSupplier.get().min(order);
+
+        if (max.isPresent() && min.isPresent()) {
+            minMaxConsumer.accept(max.get(), min.get());
+        }
+
     }
 
     private void findEvenNumbersInList(List<Integer> integerList) {
